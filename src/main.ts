@@ -37,7 +37,7 @@ export class YesNoModal extends Modal {
 }
 
 
-export default class MyPlugin extends Plugin {
+export default class Pycalc extends Plugin {
     private worker: Worker | null;
     private timer: any = null;
     private state: PluginState;
