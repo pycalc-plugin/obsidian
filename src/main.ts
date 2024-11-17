@@ -19,7 +19,7 @@ export class YesNoModal extends Modal {
 
         new Setting(this.contentEl)
             .addButton((btn) => btn
-                .setButtonText('Yes')
+                .setButtonText("Yes")
                 .setCta()
                 .onClick(() => {
                     this.close();
@@ -27,7 +27,7 @@ export class YesNoModal extends Modal {
                 }))
 
             .addButton((btn) => btn
-                .setButtonText('No')
+                .setButtonText("No")
                 .setCta()
                 .onClick(() => {
                     this.close();
@@ -67,7 +67,11 @@ export default class Pycalc extends Plugin {
         editor.setCursor(cursor);
     }
 
-    onEnter() {
+    async onEnter() {
+        if (! await this.isEnabled()) {
+            return;
+        }
+
         const editor = this.app.workspace.activeEditor?.editor;
         if (!editor) {
             return;
@@ -80,8 +84,8 @@ export default class Pycalc extends Plugin {
     }
 
     getCursorPos(editor: Editor) {
-        const head = editor.getCursor('head');
-        const anchor = editor.getCursor('anchor');
+        const head = editor.getCursor("head");
+        const anchor = editor.getCursor("anchor");
 
         if (head.line == anchor.line) {
             if (head.ch > anchor.ch) {
@@ -117,7 +121,7 @@ export default class Pycalc extends Plugin {
 
     checkLongRunning() {
         this.timer = setTimeout(() => {
-            new YesNoModal(
+            const dialog = new YesNoModal(
                 this.app,
                 "The Python code has been running for a long time. Do you want to terminate it?",
                 (result) => {
@@ -126,9 +130,12 @@ export default class Pycalc extends Plugin {
                         this.worker = null;
                         this.createWorker();
                     }
-                    this.checkLongRunning();
                 }
-            ).open();
+            );
+            dialog.onClose = () => {
+                this.checkLongRunning();
+            };
+            dialog.open();
         }, 30000);
     }
 
@@ -149,8 +156,7 @@ export default class Pycalc extends Plugin {
             if ("stderr" in message) {
                 let error = message["stderr"].join("");
 
-                // eslint-disable-next-line no-regex-spaces
-                const regex = /\)\n  (File "<\w+>", line \d+(, in <module>|).*)/s;
+                const regex = / {2}(File "<\w+>", line \d+(, in <module>|).*)/s;
                 const match = error.match(regex);
                 if (match) {
                     error = match[1]
@@ -165,6 +171,14 @@ export default class Pycalc extends Plugin {
         };
     }
 
+    releaseWorker() {
+        if (this.worker) {
+            clearTimeout(this.timer);
+            this.worker.terminate();
+            this.worker = null;
+        }
+    }
+
     async isEnabled() {
         this.state = Object.assign({}, DEFAULT_STATE, await this.loadData());
         return this.state.enabled;
@@ -176,7 +190,7 @@ export default class Pycalc extends Plugin {
     }
 
     async pluginEnable() {
-        this.pluginDisable();
+        this.releaseWorker();
 
         this.createWorker();
         this.checkLongRunning();
@@ -185,18 +199,15 @@ export default class Pycalc extends Plugin {
     }
 
     async pluginDisable() {
-        if (this.worker) {
-            clearTimeout(this.timer);
-            this.worker.terminate();
-            this.worker = null;
-        }
-
         await this.setEnabled(false);
     }
 
     async onload() {
-        if (await this.isEnabled()) {
-            this.pluginEnable();
+        const enabled = await this.isEnabled()  // init state
+        await this.pluginEnable();
+
+        if (!enabled) {
+            await this.pluginDisable();
         }
 
         this.registerEvent(
@@ -233,9 +244,9 @@ export default class Pycalc extends Plugin {
             },
         });
 
-        this.registerDomEvent(document, "keydown", (event: KeyboardEvent) => {
+        this.registerDomEvent(document, "keydown", async (event: KeyboardEvent) => {
             if (event.key === "Enter") {
-                this.onEnter();
+                await this.onEnter();
             }
         });
     }
