@@ -67,8 +67,8 @@ export default class Pycalc extends Plugin {
         editor.setCursor(cursor);
     }
 
-    async onEnter() {
-        if (! await this.isEnabled()) {
+    onEnter() {
+        if (!this.isEnabled()) {
             return;
         }
 
@@ -120,6 +120,7 @@ export default class Pycalc extends Plugin {
     }
 
     checkLongRunning() {
+        clearTimeout(this.timer);
         this.timer = setTimeout(() => {
             const dialog = new YesNoModal(
                 this.app,
@@ -141,9 +142,9 @@ export default class Pycalc extends Plugin {
 
     createWorker() {
         this.worker = new PyWorker();
+        this.checkLongRunning();
 
         this.worker.onmessage = (event) => {
-            clearTimeout(this.timer);
             this.checkLongRunning();
 
             const message = event.data
@@ -179,8 +180,7 @@ export default class Pycalc extends Plugin {
         }
     }
 
-    async isEnabled() {
-        this.state = Object.assign({}, DEFAULT_STATE, await this.loadData());
+    isEnabled() {
         return this.state.enabled;
     }
 
@@ -193,7 +193,6 @@ export default class Pycalc extends Plugin {
         this.releaseWorker();
 
         this.createWorker();
-        this.checkLongRunning();
 
         await this.setEnabled(true);
     }
@@ -203,12 +202,9 @@ export default class Pycalc extends Plugin {
     }
 
     async onload() {
-        const enabled = await this.isEnabled()  // init state
-        await this.pluginEnable();
+        this.state = Object.assign({}, DEFAULT_STATE, await this.loadData());
 
-        if (!enabled) {
-            await this.pluginDisable();
-        }
+        this.createWorker();
 
         this.registerEvent(
             this.app.workspace.on("editor-menu", (menu, editor, view) => {
@@ -239,14 +235,14 @@ export default class Pycalc extends Plugin {
         this.addCommand({
             id: "selected",
             name: "selected",
-            editorCallback: async (editor: Editor) => {
+            editorCallback: (editor: Editor) => {
                 this.calcSelected();
             },
         });
 
-        this.registerDomEvent(document, "keydown", async (event: KeyboardEvent) => {
+        this.registerDomEvent(document, "keydown", (event: KeyboardEvent) => {
             if (event.key === "Enter") {
-                await this.onEnter();
+                this.onEnter();
             }
         });
     }
