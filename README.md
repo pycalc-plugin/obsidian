@@ -2,7 +2,7 @@
 
 ## Features
 
-The pycalc plugin enables the execution of python code directly within the editor upon pressing the Enter key.
+The pycalc plugin enables the execution of Python code directly within the editor upon pressing the Enter key.
 
 Based on Brython 3.13.
 

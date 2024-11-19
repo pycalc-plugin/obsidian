@@ -1,7 +1,7 @@
 {
 	"name": "pycalc",
 	"version": "1.0.0",
-	"description": "The pycalc plugin enables the execution of python code directly within the editor upon pressing the Enter key.",
+	"description": "Enables the execution of Python code directly within the editor upon pressing the Enter key.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
@@ -10,7 +10,7 @@
 	},
 	"keywords": [],
 	"author": "",
-	"license": "MIT",
+	"license": "Apache-2.0",
 	"devDependencies": {
 		"@types/node": "^16.11.6",
 		"@typescript-eslint/eslint-plugin": "5.29.0",

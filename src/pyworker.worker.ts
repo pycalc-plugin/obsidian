@@ -20,6 +20,17 @@ import time
 from browser import console, timer
 
 
+help = """
+def __help__():
+    print('''Welcome to Python 3.13's help utility!
+
+If this is your first time using Python, you should definitely check out
+the tutorial on the internet at https://docs.python.org/3.13/tutorial/.''')
+
+help = __help__
+"""
+
+
 def __sleep__(duration):
     delay = time.time() + duration
     while time.time() < delay:
@@ -76,6 +87,7 @@ sys.stdout = Stdout()
 time.sleep = __sleep__
 timer.set_interval(interact, 10)
 repl = code.InteractiveConsole()
+repl.runcode(help)
 `
 
 function init() {
