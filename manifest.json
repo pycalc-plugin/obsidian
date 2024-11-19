@@ -3,7 +3,7 @@
 	"name": "pycalc",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "The pycalc plugin enables the execution of python code directly within the editor upon pressing the Enter key.",
+	"description": "Enables the execution of Python code directly within the editor upon pressing the Enter key.",
 	"author": "pycalc",
 	"authorUrl": "https://github.com/pycalc-plugin",
 	"isDesktopOnly": false
