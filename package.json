@@ -1,7 +1,7 @@
 {
 	"name": "pycalc",
 	"version": "1.0.0",
-	"description": "Enables the execution of Python code directly within the editor upon pressing the Enter key.",
+	"description": "Executing Python code directly within the editor by pressing the Enter key.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
