@@ -79,7 +79,7 @@ def interact():
         else:
             repl.push(line)
     except BaseException as e:
-        sys.stderr.write(rerp(e))
+        sys.stderr.write(repr(e))
 
 
 sys.stderr = Stderr()
