@@ -22,6 +22,7 @@
 		"typescript": "4.7.4"
 	},
 	"dependencies": {
+		"brython": "^3.13.0",
 		"esbuild-plugin-inline-worker": "^0.1.1"
 	}
 }

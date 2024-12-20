@@ -2,6 +2,7 @@ import esbuild from "esbuild";
 import process from "process";
 import builtins from "builtin-modules";
 import inlineWorkerPlugin from 'esbuild-plugin-inline-worker';
+import fs from 'fs/promises';
 
 const banner =
 `/*
@@ -17,40 +18,65 @@ export default {
 const prod = (process.argv[2] === "production");
 
 
+function replacePlugin(replace_map) {
+    return {
+        name: "replace-plugin",
+        setup(build) {
+            build.onEnd(async (result) => {
+                if (result.errors.length > 0) {
+                    return;
+                }
+                let contents =  await fs.readFile("main.js", "utf8");
+                for (const [search, replacement] of Object.entries(replace_map)) {
+                    contents = contents.replace(search, replacement);
+                }
+                await fs.writeFile("main.js", contents, "utf8");
+            });
+        },
+    };
+}
+
+
 const context = await esbuild.context({
-	banner: {
-		js: banner,
-	},
-	entryPoints: ["./src/main.ts"],
-	bundle: true,
-    plugins: [inlineWorkerPlugin()],
-	external: [
-		"obsidian",
-		"electron",
-		"@codemirror/autocomplete",
-		"@codemirror/collab",
-		"@codemirror/commands",
-		"@codemirror/language",
-		"@codemirror/lint",
-		"@codemirror/search",
-		"@codemirror/state",
-		"@codemirror/view",
-		"@lezer/common",
-		"@lezer/highlight",
-		"@lezer/lr",
-		...builtins],
-	format: "cjs",
-	target: "es2021",
-	logLevel: "info",
-	sourcemap: prod ? false : "inline",
-	treeShaking: true,
-	outfile: "main.js",
-	minify: prod,
+    banner: {
+        js: banner,
+    },
+    entryPoints: ["./src/main.ts"],
+    bundle: true,
+    plugins: [
+        inlineWorkerPlugin(),
+        replacePlugin({
+            '&&e.print(">",T.src.source.trim())': "",
+            "_b_.print(result)\n": "_b_.print(_b_.repr(result))\n",
+        })
+    ],
+    external: [
+        "obsidian",
+        "electron",
+        "@codemirror/autocomplete",
+        "@codemirror/collab",
+        "@codemirror/commands",
+        "@codemirror/language",
+        "@codemirror/lint",
+        "@codemirror/search",
+        "@codemirror/state",
+        "@codemirror/view",
+        "@lezer/common",
+        "@lezer/highlight",
+        "@lezer/lr",
+        ...builtins],
+    format: "cjs",
+    target: "es2021",
+    logLevel: "info",
+    sourcemap: prod ? false : "inline",
+    treeShaking: true,
+    outfile: "main.js",
+    minify: prod,
 });
 
 if (prod) {
-	await context.rebuild();
-	process.exit(0);
+    await context.rebuild();
+    process.exit(0);
 } else {
-	await context.watch();
+    await context.watch();
 }

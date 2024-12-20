@@ -1,5 +1,5 @@
-import * as brython_min from "brython.min.js";
-import * as brython_stdlib from "brython_stdlib.js";
+import * as brython_min from "brython/brython.min.js";
+import * as brython_stdlib from "brython/brython_stdlib.js";
 
 export {}
 
